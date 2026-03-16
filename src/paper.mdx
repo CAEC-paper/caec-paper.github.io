@@ -1,0 +1,119 @@
+---
+title: "CAEC: Confidential, Attestable, and Efficient Inter-CVM Communication with Arm CCA"
+authors:
+  - name: Sina Abdollahi
+    notes: ["*"]
+  - name: Amir Al Sadi
+    notes: ["*"]
+  - name: David Kotz
+    notes: ["†"]
+  - name: Marios Kogias
+    notes: ["*"]
+  - name: Hamed Haddadi
+    notes: ["*"]
+conference: 11th IEEE European Symposium on Security and Privacy (EuroS&P 2026)
+notes:
+  - symbol: "*"
+    text: Imperial College London, London, United Kingdom
+  - symbol: "†"
+    text: Dartmouth College, Hanover, NH, USA
+links:
+  - name: Paper
+    url: https://arxiv.org/pdf/2512.01594
+    icon: academicons:arxiv
+  - name: Source Code
+    url: https://github.com/comet-cc/CAEC
+    icon: ri:github-line
+theme: light
+favicon: favicon.svg
+description: CAEC introduces confidential shared memory for protected, attestable, and efficient inter-CVM communication on Arm CCA.
+thumbnail: screenshot-light.png
+---
+
+import HighlightedSection from "./components/HighlightedSection.astro";
+import Figure from "./components/Figure.astro";
+import Picture from "./components/Picture.astro";
+
+<HighlightedSection>
+
+## Abstract
+
+Confidential Virtual Machines (CVMs) are increasingly adopted to protect sensitive workloads from privileged adversaries such as the hypervisor. While they provide strong isolation guarantees, existing CVM architectures lack first-class mechanisms for inter-CVM data sharing due to their disjoint memory model, making inter-CVM data exchange a performance bottleneck in compartmentalized or collaborative multi-CVM systems. Under this model, a CVM's accessible memory is either shared with the hypervisor or protected from both the hypervisor and all other CVMs. This design simplifies reasoning about memory ownership; however, it fundamentally precludes plaintext data sharing between CVMs because all inter-CVM communication must pass through hypervisor-accessible memory, requiring costly encryption and decryption to preserve confidentiality and integrity.
+
+In this paper, we introduce CAEC, a system that enables protected memory sharing between CVMs. CAEC builds on Arm Confidential Compute Architecture (CCA) and extends its firmware to support Confidential Shared Memory (CSM), a memory region securely shared between multiple CVMs while remaining inaccessible to the hypervisor and all non-participating CVMs. CAEC's design is fully compatible with CCA hardware and introduces only a modest increase (4%) in CCA firmware code size.
+CAEC delivers substantial performance benefits across a range of workloads. For instance, inter-CVM communication over CAEC achieves up to 209x reduction in CPU cycles compared to encryption-based mechanisms over hypervisor-accessible shared memory.
+By combining high performance, strong isolation guarantees, and attestable sharing semantics, CAEC provides a practical and scalable foundation for the next generation of trusted multi-CVM services across both edge and cloud environments.
+
+</HighlightedSection>
+
+## Overview
+
+Current confidential computing architectures rely on a disjoint memory model: a Confidential Virtual Machine (CVM) owns protected memory isolated from both the hypervisor and other CVMs, while shared memory can only exist between a CVM and the hypervisor. While this model simplifies memory ownership, it prevents direct memory sharing between CVMs. As a result, inter-CVM communication must always be mediated by the untrusted hypervisor and therefore requires expensive encryption. This limitation is increasingly problematic for security-sensitive workloads that depend on collaboration or compartmentalization across multiple CVMs.
+
+CAEC addresses this limitation by introducing **Confidential Shared Memory (CSM)**, a protected memory region that can be shared between two or more CVMs while remaining inaccessible to the hypervisor and to all non-participating CVMs. Built on top of Arm Confidential Compute Architecture (CCA), CAEC extends firmware support with only modest changes while preserving compatibility with existing CCA hardware.
+
+More concretely, CAEC provides:
+
+- **Confidential Shared Memory (CSM):** memory shared across participating CVMs without exposing plaintext data to the hypervisor.
+- **Practical integration with Arm CCA:** support for CSM with minimal firmware changes, increasing firmware code size by only about 4%.
+- **Secure access control and attestation:** mechanisms that protect CSM during both initialization and runtime.
+- **Strong performance improvements:** up to 209x lower CPU-cycle overhead for inter-CVM communication, while also enabling efficient sharing of large data such as LLM components across CVMs.
+
+## Inter-CVM Communication Modes
+
+Figure 1 illustrates the motivation behind CAEC by comparing two existing inter-communication modes with CAEC. 
+
+<Figure>
+  <Picture
+    slot="figure"
+    src="../assets/Communication-path.pdf"
+    alt="Comparison of hypervisor-mediated communication, hypervisor-accessible shared memory, and CAEC confidential shared memory between CVMs"
+  />
+  <Fragment slot="caption">
+    <strong>Figure 1.</strong> Communication modes between two CVMs. 
+   
+    Cyan: memory regions accessible to the first CVM, Green: memory regions accessible to the second CVM, Purple: memory regions accessible to the hypervisor.
+
+  </Fragment>
+</Figure>
+
+- **(a) Hypervisor-mediated communication:** Communication through virtualization services, where data must be encrypted and passed via the hypervisor-mediated service. 
+- **(b) Hypervisor-accessible shared memory:** Communication using shared memory provided by the hypervisor, still requiring encryption as the shared memory is accessible to the hypervisor. 
+- **(c) Confidential Shared Memory (CSM):** CAEC, which enables CSM between CVMs. There is no need for encryption as CAEC protects the CSM from hypervisor and other CVMs.
+
+
+
+## Communication bechmark
+
+<Figure>
+  <Picture
+    slot="figure"
+    src="../assets/results.pdf"
+    alt="Performance evaluation results for CAEC showing inter-CVM communication improvements"
+  />
+  <Fragment slot="caption">
+    <strong>Figure 2.</strong> Communication Benchmark of CAEC.   
+    </Fragment>
+</Figure>
+
+Figure 2 summarizes CAEC's main benchmark that is communication benchmark between two CVMs exchanging messages through shared memory. The evaluation compares four modes: plaintext communication over normal-world (NW) shared memory, encrypted communication over NW shared memory using OpenSSL, encrypted communication over NW shared memory using MbedTLS, and CAEC, which is using CSM. 
+
+Across latency, throughput, and CPU usage, CAEC consistently 1) outperforms both encrypted NW-based configurations, and the gap widens as message size increases. 
+These results highlight the substantial overhead introduced by cryptographic protection when using NW shared memory for inter-realm communication, a cost
+that is elimionated by the CAEC's use of CSM. The results also suggests that CAEC achieves performance equivalent to plaintext NW communication, demonstrating that the previously observed differences between \name and encrypted modes over NW memory stem entirely from cryptographic processing rather than from differences in memory-access latency, caching effects, or other architectural factors.
+
+Highlights include:
+- 24x to 212x lower latency than OpenSSL and 4.4x to 203x lower latency than MbedTLS
+- 25x to 209x fewer CPU cycles than OpenSSL and 4.5x to 200x fewer than MbedTLS
+- 26x to 204x higher throughput than OpenSSL and 4.8x to 194x higher throughput than MbedTLS
+
+## BibTeX
+
+```bibtex
+@article{abdollahi2025confidential,
+  title={Confidential, Attestable, and Efficient Inter-CVM Communication with Arm CCA},
+  author={Abdollahi, Sina and Sadi, Amir Al and Kogias, Marios and Kotz, David and Haddadi, Hamed},
+  journal={arXiv preprint arXiv:2512.01594},
+  year={2025}
+}
+```
