@@ -24,6 +24,9 @@ links:
   - name: Source Code
     url: https://github.com/comet-cc/CAEC
     icon: ri:github-line
+  - name: Joint Project
+    url: https://c3infer.github.io/
+    icon: ri:links-line
 theme: light
 favicon: favicon.svg
 description: CAEC introduces confidential shared memory for protected, attestable, and efficient inter-CVM communication on Arm CCA.
@@ -58,6 +61,10 @@ More concretely, CAEC provides:
 - **Practical integration with Arm CCA:** support for CSM with minimal firmware changes, increasing firmware code size by only about 4%.
 - **Secure access control and attestation:** mechanisms that protect CSM during both initialization and runtime.
 - **Strong performance improvements:** up to 209x lower CPU-cycle overhead for inter-CVM communication, while also enabling efficient sharing of large data such as LLM components across CVMs.
+
+## Joint Project
+
+CAEC is part of the broader [C3Infer](https://c3infer.github.io/) effort: a framework for compartmentalized, confidential, and certified AI inference. C3Infer connects CAEC's protected inter-CVM communication mechanisms with the wider goal of building secure, compartmentalized AI systems that can preserve confidentiality while supporting efficient collaboration across isolated components.
 
 ## Inter-CVM Communication Modes
 
